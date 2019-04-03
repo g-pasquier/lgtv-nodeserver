@@ -89,7 +89,7 @@ app.listen(5555, function () {
 	/*
 	 at 09:00:00
 	 */	
-	var open_browser_at = schedule.scheduleJob('00 00 09 * * 1-5', function() {
+	var open_browser_at = schedule.scheduleJob('00 00-05 09 * * 1-5', function() {
 		// Connect to TV:
 		lgtv.connect(CONFIG.lgtvip, function(err, response){
 		  if (!err) {
@@ -100,6 +100,7 @@ app.listen(5555, function () {
 		    lgtv.open_browser_at(url_borne, function(err, response){
 				if (!err) {
 				  console.log("open_browser_at ok:" + JSON.stringify(response));
+				  lgtv.set_mute(true);
 				} else {
 				  console.log("open_browser_at err:" + JSON.stringify(err));
 				}
@@ -109,28 +110,6 @@ app.listen(5555, function () {
 		});
 	});
 	
-	/*
-	 at 09:00:05
-	 */	
-	var mute_on = schedule.scheduleJob('05 00 09 * * 1-5', function() {
-		// Connect to TV:
-		lgtv.connect(CONFIG.lgtvip, function(err, response){
-		  if (!err) {
-			console.log("Connected");
-			console.log("mute_on...");
-			
-		    lgtv.set_mute(true, function(err, response){
-				if (!err) {
-				  console.log("set_mute ok:" + JSON.stringify(response));
-				} else {
-				  console.log("set_mute err:" + JSON.stringify(err));
-				}
-			});
-		  }
-		  lgtv.disconnect();
-		});
-	});
-
 	/*
 	 at 14:00:00
 	 */	
@@ -145,6 +124,7 @@ app.listen(5555, function () {
 		    lgtv.open_browser_at(url_borne, function(err, response){
 				if (!err) {
 				  console.log("open_browser_at ok:" + JSON.stringify(response));
+				  lgtv.set_mute(true);
 				} else {
 				  console.log("open_browser_at err:" + JSON.stringify(err));
 				}
@@ -155,27 +135,8 @@ app.listen(5555, function () {
 	});
 	
 	/*
-	 at 14:00:05
+	 at 19:30
 	 */
-	var mute_on2 = schedule.scheduleJob('05 00 14 * * 1-5', function() {
-		// Connect to TV:
-		lgtv.connect(CONFIG.lgtvip, function(err, response){
-		  if (!err) {
-			console.log("Connected");
-			console.log("mute_on...");
-			
-		    lgtv.set_mute(true, function(err, response){
-				if (!err) {
-				  console.log("set_mute ok:" + JSON.stringify(response));
-				} else {
-				  console.log("set_mute err:" + JSON.stringify(err));
-				}
-			});
-		  }
-		  lgtv.disconnect();
-		});
-	});
-	
 	var turn_off = schedule.scheduleJob('00 30 19 * * 1-5', function() {
 		// Connect to TV:
 		lgtv.connect(CONFIG.lgtvip, function(err, response){
