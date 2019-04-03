@@ -38,6 +38,10 @@ app.use('/on', require('./apis/turn-on'));
 
 lgtv = require("lgtv");
 
+
+console.log("Started : " + new Date());
+
+
 /*
  At startup get audio status and force Mute
  */
@@ -71,26 +75,12 @@ The cron format consists of:
 app.listen(5555, function () {
 	console.log('LGTV http server is up to http://localhost:5555');
     
-	// Not working...
-	var turn_tv_on = schedule.scheduleJob('00 55 08 * * 1-5', function() {
-		console.log("turn_tv_on...");
-		var turnOn = function() {
-			wol.wake(CONFIG.lgtvmac, function(error) {
-				if(error) {
-				  console.log(error);
-				  return;
-				}
-				var magicPacket = wol.createMagicPacket(CONFIG.lgtvmac);
-			});
-		};
-		turnOn();		  
-	});
-
 	/*
 	 at 09:00:00
 	 */	
 	var open_browser_at = schedule.scheduleJob('00 00-05 09 * * 1-5', function() {
 		// Connect to TV:
+		console.log("Started : " + new Date());
 		lgtv.connect(CONFIG.lgtvip, function(err, response){
 		  if (!err) {
 			console.log("Connected");
@@ -115,6 +105,7 @@ app.listen(5555, function () {
 	 */	
 	var open_browser_at2 = schedule.scheduleJob('00 00 14 * * 1-5', function() {
 		// Connect to TV:
+		console.log("Started : " + new Date());
 		lgtv.connect(CONFIG.lgtvip, function(err, response){
 		  if (!err) {
 			console.log("Connected");
@@ -139,6 +130,7 @@ app.listen(5555, function () {
 	 */
 	var turn_off = schedule.scheduleJob('00 30 19 * * 1-5', function() {
 		// Connect to TV:
+		console.log("Started : " + new Date());
 		lgtv.connect(CONFIG.lgtvip, function(err, response){
 		  if (!err) {
 			console.log("Connected");
