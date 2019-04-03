@@ -45,12 +45,11 @@ lgtv.connect(CONFIG.lgtvip, function(err, response){
 	lgtv.get_status(function(err, response){
 		if (!err) {
 		  console.log("get status ok:" + JSON.stringify(response));
-		  console.log("Volume is " + response.payload.volume + " and Mute is " + response.payload.mute);
 		  var mute = response.payload.mute;
+		  console.log("Volume is " + response.payload.volume + " and Mute is " + mute);
 		  if (mute == false) {
 			  lgtv.set_mute(true);
 		  }
-		  
 		} else {
 		  console.log("get status err:" + JSON.stringify(response));
 		}
