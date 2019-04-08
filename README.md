@@ -1,6 +1,15 @@
 # GFI Update (2/04/2019 - Guillaume Pasquier)
-
 This is a fork from https://github.com/Danovadia/lgtv-http-server
+
+## install & run
+
+npm install
+npm start
+
+## Docker install & run
+
+sudo docker build -t lgtv-node-server .
+sudo docker run -d lgtv-node-server
 
 
 # Description

@@ -10,4 +10,8 @@ RUN npm install
 # Bundle app source
 COPY . .
 
+# GPA: Force Europe/Paris TZ
+RUN rm /etc/localtime
+RUN ln -s /usr/share/zoneinfo/Europe/Paris /etc/localtime
+
 CMD [ "npm", "start" ]
