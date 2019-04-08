@@ -56,9 +56,9 @@ app.listen(5555, function () {
 	console.log('LGTV http server is up to http://localhost:5555');
     
 	/*
-	 open_browser_at 8:30-45
+	 open_browser_at 8:30-35
 	 */	
-	var open_browser_at = schedule.scheduleJob('00 00-30 10 * * 1-5', function() {
+	var open_browser_at = schedule.scheduleJob('00 30-35 08 * * 1-5', function() {
 		// Connect to TV:
 		console.log("Started : " + new Date());
 		lgtv.connect(CONFIG.lgtvip, function(err, response){
