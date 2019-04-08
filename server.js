@@ -38,9 +38,7 @@ app.use('/on', require('./apis/turn-on'));
 
 lgtv = require("lgtv");
 
-
 console.log("Started : " + new Date());
-
 
 /*
  At startup get audio status and force Mute
@@ -76,23 +74,23 @@ app.listen(5555, function () {
 	console.log('LGTV http server is up to http://localhost:5555');
     
 	/*
-	 at 09:00:00
+	 at 8:30-55
 	 */	
-	var open_browser_at = schedule.scheduleJob('00 00-05 09 * * 1-5', function() {
+	var open_browser_at = schedule.scheduleJob('00 30-55 08 * * 1-5', function() {
 		// Connect to TV:
 		console.log("Started : " + new Date());
 		lgtv.connect(CONFIG.lgtvip, function(err, response){
 		  if (!err) {
 			console.log("Connected");
 			console.log("open_browser_at...");
-			
-			// open_browser_at:
-		    lgtv.open_browser_at(url_borne, function(err, response){
-				if (!err) {
+						
+			// open_browser_at if not already started:
+		    lgtv.open_browser_at(url_borne, function(err1, response){
+				if (!err1) {
 				  console.log("open_browser_at ok:" + JSON.stringify(response));
 				  lgtv.set_mute(true);
 				} else {
-				  console.log("open_browser_at err:" + JSON.stringify(err));
+				  console.log("open_browser_at err:" + JSON.stringify(err1));
 				}
 			});
 		  }
@@ -112,12 +110,12 @@ app.listen(5555, function () {
 			console.log("open_browser_at...");
 			
 			// open_browser_at:
-		    lgtv.open_browser_at(url_borne, function(err, response){
-				if (!err) {
+		    lgtv.open_browser_at(url_borne, function(err1, response){
+				if (!err1) {
 				  console.log("open_browser_at ok:" + JSON.stringify(response));
 				  lgtv.set_mute(true);
 				} else {
-				  console.log("open_browser_at err:" + JSON.stringify(err));
+				  console.log("open_browser_at err:" + JSON.stringify(err1));
 				}
 			});
 		  }
