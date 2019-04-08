@@ -3,13 +3,13 @@ This is a fork from https://github.com/Danovadia/lgtv-http-server
 
 ## install & run
 
-npm install
-npm start
+- npm install
+- npm start
 
 ## Docker install & run
 
-sudo docker build -t lgtv-node-server .
-sudo docker run -d lgtv-node-server
+- sudo docker build -t lgtv-node-server .
+- sudo docker run -d lgtv-node-server
 
 
 # Description
