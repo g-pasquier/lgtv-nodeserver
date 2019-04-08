@@ -40,24 +40,6 @@ lgtv = require("lgtv");
 
 console.log("Started : " + new Date());
 
-/*
- At startup get audio status and force Mute
- */
-lgtv.connect(CONFIG.lgtvip, function(err, response){
-	lgtv.get_status(function(err, response){
-		if (!err) {
-		  console.log("get status ok:" + JSON.stringify(response));
-		  var mute = response.payload.mute;
-		  console.log("Volume is " + response.payload.volume + " and Mute is " + mute);
-		  if (mute == false) {
-			  lgtv.set_mute(true);
-		  }
-		} else {
-		  console.log("get status err:" + JSON.stringify(response));
-		}
-		lgtv.disconnect();
-	});
-});
 
 /* Cron-style Scheduling
 The cron format consists of:
@@ -74,9 +56,9 @@ app.listen(5555, function () {
 	console.log('LGTV http server is up to http://localhost:5555');
     
 	/*
-	 at 8:30-55
+	 open_browser_at 8:30-45
 	 */	
-	var open_browser_at = schedule.scheduleJob('00 30-55 08 * * 1-5', function() {
+	var open_browser_at = schedule.scheduleJob('00 00-30 10 * * 1-5', function() {
 		// Connect to TV:
 		console.log("Started : " + new Date());
 		lgtv.connect(CONFIG.lgtvip, function(err, response){
@@ -84,7 +66,7 @@ app.listen(5555, function () {
 			console.log("Connected");
 			console.log("open_browser_at...");
 						
-			// open_browser_at if not already started:
+			// open_browser_at:
 		    lgtv.open_browser_at(url_borne, function(err1, response){
 				if (!err1) {
 				  console.log("open_browser_at ok:" + JSON.stringify(response));
@@ -99,7 +81,30 @@ app.listen(5555, function () {
 	});
 	
 	/*
-	 at 14:00:00
+	 Mute 1 at 8:45
+	 */
+	var mute_on = schedule.scheduleJob('00 45 08 * * 1-5', function() {
+		// Connect to TV:
+		console.log("Started : " + new Date());
+		lgtv.connect(CONFIG.lgtvip, function(err, response){
+			lgtv.get_status(function(err, response){
+				if (!err) {
+				  console.log("get status ok:" + JSON.stringify(response));
+				  var mute = response.payload.mute;
+				  console.log("Volume is " + response.payload.volume + " and Mute is " + mute);
+				  if (mute == false) {
+					  lgtv.set_mute(true);
+				  }
+				} else {
+				  console.log("get status err:" + JSON.stringify(response));
+				}
+				lgtv.disconnect();
+			});
+		});
+	});
+	
+	/*
+	 open_browser_at 14:00:00
 	 */	
 	var open_browser_at2 = schedule.scheduleJob('00 00 14 * * 1-5', function() {
 		// Connect to TV:
@@ -124,7 +129,30 @@ app.listen(5555, function () {
 	});
 	
 	/*
-	 at 19:30
+	 Mute 2 at 14:01
+	 */
+	var mute_on2 = schedule.scheduleJob('00 01 14 * * 1-5', function() {
+		// Connect to TV:
+		console.log("Started : " + new Date());
+		lgtv.connect(CONFIG.lgtvip, function(err, response){
+			lgtv.get_status(function(err, response){
+				if (!err) {
+				  console.log("get status ok:" + JSON.stringify(response));
+				  var mute = response.payload.mute;
+				  console.log("Volume is " + response.payload.volume + " and Mute is " + mute);
+				  if (mute == false) {
+					  lgtv.set_mute(true);
+				  }
+				} else {
+				  console.log("get status err:" + JSON.stringify(response));
+				}
+				lgtv.disconnect();
+			});
+		});
+	});
+	
+	/*
+	 stop at 19:30
 	 */
 	var turn_off = schedule.scheduleJob('00 30 19 * * 1-5', function() {
 		// Connect to TV:
