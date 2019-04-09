@@ -58,7 +58,6 @@ app.listen(5555, function () {
 	console.log('LGTV http server is up to http://localhost:5555');
     
 	var do_open_browser = function() {
-		
 		console.log("Started : " + new Date());
 		
 		lgtv.connect(tv_ip_address, function(err, response){
@@ -75,7 +74,18 @@ app.listen(5555, function () {
 		  lgtv.disconnect();
 		}); //connect		
 	}
-	
+		
+	var do_turn_off = function() {
+		console.log("Started : " + new Date());
+		
+		lgtv.connect(tv_ip_address, function(err, response){
+			if (!err) {
+				lgtv.turn_off();
+				lgtv.disconnect();
+			}
+		});
+	}
+
 	/*
 	 open_browser_at
 	 */
@@ -86,7 +96,7 @@ app.listen(5555, function () {
 	/*
 	 open_browser_at
 	 */
-	open_browser_at = schedule.scheduleJob('00 00-55 14 * * 1-5', function() {
+	var open_browser_at2 = schedule.scheduleJob('00 00-15 14 * * 1-5', function() {
 		do_open_browser();
 	});
 		
