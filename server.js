@@ -58,51 +58,58 @@ app.listen(5555, function () {
 	console.log('LGTV http server is up to http://localhost:5555');
     
 	/*
-	 open_browser_at 8:30-35
-	 */	
-	var open_browser_at = schedule.scheduleJob('00 30-35 08 * * 1-5', function() {
-		console.log("Started : " + new Date());
-		
-		lgtv.connect(tv_ip_address, function(err, response){
-		  if (!err) {			
-		    lgtv.open_browser_at(url_borne, function(err, response){
-				if (!err) {
-				  console.log("open_browser_at ok:" + JSON.stringify(response));
-				} else {
-				  console.log("open_browser_at err:" + JSON.stringify(err));
-				}
-			}); //open_browser_at
-		  }
-		  lgtv.set_mute(true);
-		  lgtv.disconnect();
-		}); //connect
-	});
-	
-	/*
-	 open_browser_at 14:00:00
-	 */	
-	var open_browser_at2 = schedule.scheduleJob('00 00 14 * * 1-5', function() {
-		console.log("Started : " + new Date());
-		
-		lgtv.connect(tv_ip_address, function(err, response){
-		  if (!err) {			
-		    lgtv.open_browser_at(url_borne, function(err, response){
-				if (!err) {
-				  console.log("open_browser_at ok:" + JSON.stringify(response));
-				} else {
-				  console.log("open_browser_at err:" + JSON.stringify(err));
-				}
-			}); //open_browser_at
-		  }
-		  lgtv.set_mute(true);
-		  lgtv.disconnect();
-		}); //connect
-	});
-	
-	/*
-	 turn_off at 19:30
+	 open_browser_at
 	 */
-	var turn_off = schedule.scheduleJob('00 30 19 * * 1-5', function() {
+	var cron = '00 30-45 08 * * 1-5';
+	
+	var open_browser_at = schedule.scheduleJob(cron, function() {
+		console.log("Started : " + new Date());
+		
+		lgtv.connect(tv_ip_address, function(err, response){
+		  if (!err) {			
+		    lgtv.open_browser_at(url_borne, function(err, response){
+				if (!err) {
+				  console.log("open_browser_at ok:" + JSON.stringify(response));
+				} else {
+				  console.log("open_browser_at err:" + JSON.stringify(err));
+				}
+			}); //open_browser_at
+		  }
+		  lgtv.set_mute(true);
+		  lgtv.disconnect();
+		}); //connect
+	});
+	
+	
+	/*
+	 open_browser_at
+	 */
+	cron = '00 00-15 14 * * 1-5';
+	
+	open_browser_at = schedule.scheduleJob(cron, function() {
+		console.log("Started : " + new Date());
+		
+		lgtv.connect(tv_ip_address, function(err, response){
+		  if (!err) {			
+		    lgtv.open_browser_at(url_borne, function(err, response){
+				if (!err) {
+				  console.log("open_browser_at ok:" + JSON.stringify(response));
+				} else {
+				  console.log("open_browser_at err:" + JSON.stringify(err));
+				}
+			}); //open_browser_at
+		  }
+		  lgtv.set_mute(true);
+		  lgtv.disconnect();
+		}); //connect
+	});
+	
+	
+	/*
+	 turn_off
+	 */
+	cron = '00 30 19 * * 1-5';
+	var turn_off = schedule.scheduleJob(cron, function() {
 		console.log("Started : " + new Date());
 		
 		lgtv.connect(tv_ip_address, function(err, response){
