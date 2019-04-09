@@ -41,6 +41,21 @@ lgtv = require("lgtv");
 
 console.log("Started : " + new Date());
 
+var do_connect = function() {
+	console.log("Started : " + new Date());
+	lgtv.connect(tv_ip_address, function(err, response){
+		if (!err) {
+			lgtv.sw_info(function(err, response) {
+				if (!err) {
+					console.log("SW Info = " + JSON.stringify(response));
+					lgtv.disconnect();
+				}
+			});
+		}
+	});
+}
+do_connect();
+
 
 /* Cron-style Scheduling
 The cron format consists of:
