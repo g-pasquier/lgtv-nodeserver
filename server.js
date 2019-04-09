@@ -59,8 +59,8 @@ app.listen(5555, function () {
 	 open_browser_at & set_mute at 8:30-35
 	 */	
 	var open_browser_at = schedule.scheduleJob('00 30-35 08 * * 1-5', function() {
-		// Connect to TV:
 		console.log("open_browser_at - Started : " + new Date());
+		
 		lgtv.connect(CONFIG.lgtvip, function(err, response){
 		  if (!err) {			
 		    lgtv.open_browser_at(url_borne, function(err1, response){
@@ -80,8 +80,8 @@ app.listen(5555, function () {
 	 open_browser_at & set_mute at 14:00:00
 	 */	
 	var open_browser_at2 = schedule.scheduleJob('00 00 14 * * 1-5', function() {
-		// Connect to TV:
 		console.log("open_browser_at2 - Started : " + new Date());
+		
 		lgtv.connect(CONFIG.lgtvip, function(err, response){
 		  if (!err) {			
 		    lgtv.open_browser_at(url_borne, function(err1, response){
@@ -101,12 +101,16 @@ app.listen(5555, function () {
 	 stop at 19:30
 	 */
 	var turn_off = schedule.scheduleJob('00 30 19 * * 1-5', function() {
-		// Connect to TV:
 		console.log("turn_off - Started : " + new Date());
+		
 		lgtv.connect(CONFIG.lgtvip, function(err, response){
-		  if (!err) {
-			console.log("turn_off...");
-		    lgtv.turn_off();
+			if (!err) {
+				console.log("turn_off...");
+				lgtv.turn_off(function(err, response){
+					if (!err) {
+						lgtv.disconnect();
+				}
+			});
 		  }
 		});
 	});
