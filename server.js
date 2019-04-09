@@ -68,12 +68,12 @@ app.listen(5555, function () {
 		    lgtv.open_browser_at(url_borne, function(err, response){
 				if (!err) {
 				  console.log("open_browser_at ok:" + JSON.stringify(response));
-				  lgtv.set_mute(true);
 				} else {
 				  console.log("open_browser_at err:" + JSON.stringify(err));
 				}
 			}); //open_browser_at
 		  }
+		  lgtv.set_mute(true);
 		  lgtv.disconnect();
 		}); //connect
 	});
@@ -89,12 +89,12 @@ app.listen(5555, function () {
 		    lgtv.open_browser_at(url_borne, function(err, response){
 				if (!err) {
 				  console.log("open_browser_at ok:" + JSON.stringify(response));
-				  lgtv.set_mute(true);
 				} else {
 				  console.log("open_browser_at err:" + JSON.stringify(err));
 				}
 			}); //open_browser_at
 		  }
+		  lgtv.set_mute(true);
 		  lgtv.disconnect();
 		}); //connect
 	});
