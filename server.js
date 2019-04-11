@@ -41,22 +41,7 @@ lgtv = require("lgtv");
 
 console.log("Started : " + new Date());
 
-var do_init = function() {
-	console.log("Started : " + new Date());
-	lgtv.connect(tv_ip_address, function(err, response){
-		if (!err) {
-			lgtv.sw_info(function(err, response) {
-				if (!err) {
-					console.log("SW_Info = " + JSON.stringify(response));
-					do_open_browser();
-					lgtv.disconnect();
-				}
-			});
-		}
-	});
-}
-
-var do_open_browser = function() {
+var open_browser = function() {
 	console.log("Started : " + new Date());
 	
 	lgtv.connect(tv_ip_address, function(err, response){
@@ -69,7 +54,22 @@ var do_open_browser = function() {
 			}
 		}); //open_browser_at
 	  }
-	}); //connect		
+	}); //connect
+}
+
+var do_init = function() {
+	console.log("Started : " + new Date());
+	lgtv.connect(tv_ip_address, function(err, response){
+		if (!err) {
+			lgtv.sw_info(function(err, response) {
+				if (!err) {
+					console.log("SW_Info = " + JSON.stringify(response));
+					open_browser();
+					lgtv.disconnect();
+				}
+			});
+		}
+	});
 }
 
 do_init();
@@ -89,10 +89,24 @@ The cron format consists of:
 app.listen(5555, function () {
 	
 	console.log('LGTV http server is up to http://localhost:5555');
-    		
-	var do_turn_off = function() {
+
+	var do_open_browser = function() {
 		console.log("Started : " + new Date());
 		
+		lgtv.connect(tv_ip_address, function(err, response){
+		  if (!err) {
+			lgtv.open_browser_at(url_borne, function(err, response){
+				if (!err) {
+					console.log("open_browser_at ok:" + JSON.stringify(response));
+					lgtv.set_mute(true);
+					lgtv.disconnect();			  
+				}
+			}); //open_browser_at
+		  }
+		}); //connect
+	}
+	
+	var do_turn_off = function() {		
 		lgtv.connect(tv_ip_address, function(err, response){
 			if (!err) {
 				lgtv.turn_off();
@@ -104,10 +118,10 @@ app.listen(5555, function () {
 	/*
 	 open_browser_at
 	 */
-	var open_browser_at = schedule.scheduleJob('00 30-45 08 * * 1-5', function() {
+	var open_browser_at = schedule.scheduleJob('00 30-35 08 * * 1-5', function() {
 		do_open_browser();
 	});	
-	var open_browser_at_14 = schedule.scheduleJob('00 00-15 14 * * 1-5', function() {
+	var open_browser_at_14 = schedule.scheduleJob('00 00-05 14 * * 1-5', function() {
 		do_open_browser();
 	});
 		
