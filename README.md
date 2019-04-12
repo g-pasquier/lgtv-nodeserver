@@ -8,8 +8,8 @@ This is a fork from https://github.com/Danovadia/lgtv-http-server
 
 ## Docker install & run
 
-- sudo docker build -t lgtv-node-server .
-- sudo docker run -d lgtv-node-server
+- docker build -t lgtv-node-server .
+- docker run -d lgtv-node-server
 
 
 # Description
