@@ -1,128 +1,169 @@
+/*
+	Refs:
+	https://github.com/Danovadia/lgtv-http-server
+	https://github.com/hobbyquaker/lgtv2/
+	https://github.com/hobbyquaker/lgtv2/issues/23
+	
+	GFI V1.0 - 16/04/2019
+	
+*/
 var express = require('express')
 var app = express()
 var bodyParser = require('body-parser');
 var fs = require('fs');
 var schedule = require('node-schedule');
-var wol = require('node-wol');
+
+
+var url_borne = "https://borne-gfi.azurewebsites.net/";
+//var url_borne = "http://172.16.14.101:8080/tv";
 
 
 try {
-	var CONFIG = require('./config')
-	
+	var CONFIG = require('./config.json')
 } catch (e) {
-	fs.writeFile("config.json", '{"lgtvip" : "0.0.0.0", "lgtvmac" : "00:00:00:00:00:00"}', function(err) {
-    if(err) {
-      return console.log(err);
-    }
-    console.log("Config file created");
+	fs.writeFile("config.json", '{"lgtv_ip" : "0.0.0.0", "lgtvmac" : "00:00:00:00:00:00"}', function(err) {
   });
 } finally {
 	console.log(CONFIG);
 }
-
-var tv_ip_address = CONFIG.lgtvip;
-var url_borne = "https://borne-gfi.azurewebsites.net/";
+var tv_ip_address = CONFIG.lgtv_ip;
+var cron = CONFIG.cron;
+var clientKey = CONFIG.clientKey;
 
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(express.static('public'))
 
-app.get('/', function(req, res, next) {
-  res.type('html').sendFile(__dirname + '/index.html');
+app.get('/tv', function(req, res, next) {
+  res.type('html').sendFile(__dirname + '/Borne/wwwroot/index.html');
 });
 
-app.use('/input', require('./apis/change-input'));
-app.use('/volume', require('./apis/change-volume'));
-app.use('/alert', require('./apis/alert'));
-app.use('/off', require('./apis/turn-off'));
-app.use('/on', require('./apis/turn-on'));
-
-lgtv = require("lgtv");
+// -- MIME-TYPE handling for the TV Borne --
+app.use('/css', express.static('./Borne/wwwroot/css'));
+app.use('/js', express.static('./Borne/wwwroot/js'));
+app.use('/libs', express.static('./Borne/wwwroot/libs'));
+app.use('/', express.static('./Borne/wwwroot/'));
 
 console.log("Started : " + new Date());
 
-var open_browser = function() {
-	console.log("Started : " + new Date());
-	
-	lgtv.connect(tv_ip_address, function(err, response){
-	  if (!err) {
-		lgtv.open_browser_at(url_borne, function(err, response){
-			if (!err) {
-				console.log("open_browser_at ok:" + JSON.stringify(response));
-				lgtv.set_mute(true);
-				lgtv.disconnect();			  
-			}
-		}); //open_browser_at
-	  }
-	}); //connect
-}
 
-var do_init = function() {
-	console.log("Started : " + new Date());
-	lgtv.connect(tv_ip_address, function(err, response){
+var lgtv = require('./index.js')({
+	url: 'ws://' + tv_ip_address + ':3000', clientKey: clientKey
+});
+
+lgtv.on('error', function (err) {
+    console.log(err);
+});
+
+lgtv.on('connecting', function () {
+    console.log('connecting to LGTV... ' + tv_ip_address + " on " + new Date());
+});
+
+lgtv.on('connect', function () {
+    console.log('connected on ' + new Date());
+
+	lgtv.request('ssap://com.webos.service.update/getCurrentSWInformation', '', function(err, resp) {
 		if (!err) {
-			lgtv.sw_info(function(err, response) {
-				if (!err) {
-					console.log("SW_Info = " + JSON.stringify(response));
-					open_browser();
-					lgtv.disconnect();
-				}
-			});
+			console.log('webos: ' + JSON.stringify(resp));
 		}
 	});
-}
+	
+	// open_browser
+	var payload = '{"target":"' + url_borne + '"}'
+	console.log("send_command = " + payload);
+	lgtv.request('ssap://system.launcher/open', payload, function (err, data) {
+		if (!err) {
+			// mute
+			console.log("send_command = audio/setMute..");
+			lgtv.request('ssap://audio/setMute', {mute: true});
+			
+			// full screen
+			lgtv.getSocket('ssap://com.webos.service.networkinput/getPointerInputSocket',
+			  function(err, sock) {
+				  if (!err) {
+					  const command = "move\n" + "dx:" + 11 + "\n" + "dy:-8\n" + "down:0\n" + "\n";
+					  
+					  for (let i=0; i < 22; i++) {
+						console.log('Pointer move.. ' + i);
+						sock.send(command);
+					  }
+					  setTimeout(()=>sock.send('click'), 5000);
+					  console.log('Pointer click..');
+				  } else {
+					  console.log('getPointerInputSocket Error ' + err);
+				  }
+			  }
+			);
+		}
+	}); //lgtv.request
+		
+});
 
-do_init();
+lgtv.on('prompt', function () {
+    console.log('please authorize on TV');
+});
+
+lgtv.on('close', function () {
+    console.log('close');
+});
 
 
 /* Cron-style Scheduling
 The cron format consists of:
-*    *    *    *    *    *
-┬    ┬    ┬    ┬    ┬    ┬
-│    │    │    │    │    │
-│    │    │    │    │    └ day of week (0 - 7) (0 or 7 is Sun)
-│    │    │    │    └───── month (1 - 12)
-│    │    │    └────────── day of month (1 - 31)
-│    │    └─────────────── hour (0 - 23)
-│    └──────────────────── minute (0 - 59)
+00  30  08  *   *   1-5
+*	*	*	*	*	*
+┬	┬	┬	┬	┬	┬
+│	│	│	│	│	│
+│	│	│	│	│	└ day of week (0 - 7) (0 or 7 is Sun)
+│	│	│	│	└───── month (1 - 12)
+│	│	│	└────────── day of month (1 - 31)
+│	│	└─────────────── hour (0 - 23)
+│	└──────────────────── minute (0 - 59)
 └───────────────────────── second (0 - 59, OPTIONAL) */
-app.listen(5555, function () {
-	
-	console.log('LGTV http server is up to http://localhost:5555');
-
-	var do_open_browser = function() {
-		console.log("Started : " + new Date());
-		
-		lgtv.connect(tv_ip_address, function(err, response){
-		  if (!err) {
-			lgtv.open_browser_at(url_borne, function(err, response){
-				if (!err) {
-					console.log("open_browser_at ok:" + JSON.stringify(response));
-					lgtv.set_mute(true);
-					lgtv.disconnect();			  
-				}
-			}); //open_browser_at
-		  }
-		}); //connect
-	}
-	
-	var do_turn_off = function() {		
-		lgtv.connect(tv_ip_address, function(err, response){
-			if (!err) {
-				lgtv.turn_off();
-				lgtv.disconnect();
-			}
-		});
-	}
+app.listen(8080, function () {
+	console.log('LGTV server is up to http://localhost:8080');
 
 	/*
-	 open_browser_at
+	 do_exec = send commands
 	 */
-	var open_browser_at = schedule.scheduleJob('00 30-35 08 * * 1-5', function() {
-		do_open_browser();
+	var do_exec = function() {
+		console.log("Started : " + new Date());
+
+		// open_browser
+		var payload = '{"target":"' + url_borne + '"}'
+		console.log("send_command = " + payload);
+		lgtv.request('ssap://system.launcher/open', payload, function (err, data) {
+			if (!err) {
+				// mute
+				console.log("send_command = audio/setMute..");
+				lgtv.request('ssap://audio/setMute', {mute: true});
+				
+				// full screen
+				lgtv.getSocket('ssap://com.webos.service.networkinput/getPointerInputSocket',
+				  function(err, sock) {
+					  if (!err) {
+						  const command = "move\n" + "dx:" + 11 + "\n" + "dy:-8\n" + "down:0\n" + "\n";
+						  
+						  for (let i=0; i < 22; i++) {
+							console.log('Pointer move.. ' + i);
+							sock.send(command);
+						  }
+						  setTimeout(()=>sock.send('click'), 5000);
+						  console.log('Pointer click..');
+					  } else {
+						  console.log('getPointerInputSocket Error ' + err);
+					  }
+				  }
+				);
+			}
+		}); //lgtv.request		
+	};
+	
+	var open_browser_at = schedule.scheduleJob(""+cron[0], function() {
+		do_exec();
 	});	
-	var open_browser_at_14 = schedule.scheduleJob('00 00-05 14 * * 1-5', function() {
-		do_open_browser();
+	var open_browser_at = schedule.scheduleJob(""+cron[1], function() {
+		do_exec();
 	});
 		
 })

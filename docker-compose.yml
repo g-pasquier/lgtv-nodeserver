@@ -1,0 +1,8 @@
+version: '2'
+
+services:
+   server:
+     restart: always
+     image: lgtv-node-server:latest
+     ports:
+       - "8080:8080"

@@ -1,138 +1,276 @@
-# GFI Update (2/04/2019 - Guillaume Pasquier)
-This is a fork from https://github.com/Danovadia/lgtv-http-server
+# GFI Version forked from both lgtv2 & Danovadia/lgtv-http-server projects
 
-## install & run
-
-- npm install
-- npm start
-
-## Docker install & run
-
-- docker build -t lgtv-node-server .
-- docker run -d lgtv-node-server
+Refs = 
+- https://github.com/hobbyquaker/lgtv2
+- https://github.com/Danovadia/lgtv-http-server
 
 
-# Description
-Easy way to control your LG webOS 3 TV.
-After installing run `npm start` and check out `http://localhost:3000` for examples, or check the docs for HTTP requests.
-Can easily serve as a service for any kind of home automation (host on a Rasberry Pi).
+- a Nodejs server with scheduled tasks to send commands to the LG TV WebOS (tv.agence)
+  - open_browser
+  - volume mute
+  - set full screen mode
 
-Forked from msloth's project.
+- contains also source code and website for the tv.agence (/Borne/wwwroot)
+  - previously hosted on https://borne-gfi.azurewebsites.net/
+  - 172.16.14.101:8080/tv
+  
+## Install & run
 
-# LGTV
+- Nodejs
+  - npm install
+  - npm start
+
+- Docker install & run
+  - cd lgtv_node_server
+    - sudo docker build -t lgtv-node-server .
+  - sudo docker run -p 8080:8080 -d lgtv-node-server
+  - or via Docker-compose:
+    - sudo docker-compose up -d
+
+	
+# LGTV2
+
+[![NPM version](https://badge.fury.io/js/lgtv2.svg)](http://badge.fury.io/js/lgtv2)
+[![npm](https://img.shields.io/npm/dt/lgtv2.svg)]()
+[![dependencies Status](https://david-dm.org/hobbyquaker/lgtv2/status.svg)](https://david-dm.org/hobbyquaker/lgtv2)
+[![Build Status](https://travis-ci.org/hobbyquaker/lgtv2.svg?branch=master)](https://travis-ci.org/hobbyquaker/lgtv2)
+[![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo)
+[![License][mit-badge]][mit-url]
+
+Simple Node.js module to remote control LG WebOS smart TVs.
+
+> this is a fork of [LGTV.js](https://github.com/msloth/lgtv.js), heavily modified and rewritten to suite my needs.
+
+With __v1.4.0__ the location and filename of the keyFile is changed, so you likely will have to accept the connection on 
+your TV again after upgrading to 1.4.0.
+
+
+## Projects using this Module
+
+* [node-red-contrib-lgtv](https://github.com/hobbyquaker/node-red-contrib-lgtv) - [Node-RED](https://nodered.org/) Nodes to control LG webOS Smart TVs.
+* [lgtv2mqtt](https://github.com/hobbyquaker/lgtv2mqtt) - Interface between LG WebOS Smart TVs and MQTT.
+* [homebridge-webos-tv](https://github.com/merdok/homebridge-webos-tv) - [Homebridge](https://github.com/nfarina/homebridge) plugin for LG WebOS TVs.
+* [ioBroker.lgtv](https://github.com/SebastianSchultz/ioBroker.lgtv) - LG WebOS SmartTV adapter for [ioBroker](http://iobroker.net/).
+
 
 ## Installation
 
-`npm install lgtv` and set up the TV per below.
+`npm install lgtv2`
 
-## Prerequisites
+## TV configuration
 
-First, the device (eg your computer) must be on the same network as the TV. Second, you should enable the TV to broadcast itself as `lgsmarttv.lan` in the local network. This setting is under `Network/LG Connect Apps`. This is necessary in order for this module to find the TV on the network and allow apps to connect. You also need to be on the same network as the TV.
+You need to allow "LG Connect Apps" on your TV - see http://www.lg.com/uk/support/product-help/CT00008334-1437131798537-others
 
-## Quick start
+## Usage Examples
 
-The first time you run it against the TV, you need to give the program access to the TV by answering `yes` to the prompt on the TV. From then on, the received client key is used so you don't have to perform this step again.
 
-Then, follow some of the examples to begin with, eg `examples/show-float.js` to show a float pop up on the screen:
+Subscribe to volume and mute changes and output to console:
+```javascript
 
-```js
-lgtv = require("lgtv");
+var lgtv = require("lgtv2")({
+    url: 'ws://lgwebostv:3000'
+});
 
-var tv_ip_address = "192.168.1.214";
-lgtv.connect(tv_ip_address, function(err, response){
-  if (!err) {
-    lgtv.show_float("It works!", function(err, response){
-      if (!err) {
-        lgtv.disconnect();
-      }
-    }); // show float
-  }
-}); // connect
-```
+lgtv.on('error', function (err) {
+    console.log(err);
+});
 
-Now that you can do this, we also can change input source to eg TV/HDMI/whatever, list and open apps, open browser, open Youtube app, change channel/volume, turn off the TV etc. Basically the only thing that doesn't work right now is a) turning on the TV, which doesn't seem possible this way, and b) opening Youtube at an URL (coming soon).
-
-### Using a hostname or IP-address of the TV
-
-The above uses a default hostname, `lgsmarttv.lan`. Your TV may not follow that, or you may have more than one TV. Then you can specify the hostname like below. The hostname can be eg `kitchen-tv.lan`, `192.168.1.214` or similar.
-
-```js
-lgtv = require("lgtv");
-
-lgtv.connect("192.168.1.214", function(err, response){
-  if (!err) {
-    lgtv.show_float("It works!", function(err, response){
-      if (!err) {
-        lgtv.disconnect();
-      }
-    }); // show float
-  }
-}); // connect
-```
-
-### Auto-detecting the TV on the network
-
-If you don't know the IP of the TV, or the hostname, you can scan for it using the `discover_ip()` function like below. Beware that this takes 3-4 seconds for the round-trip times (the TV is slow to respond to the SSDP discover probe).
-
-```js
-lgtv = require("lgtv");
-
-var retry_timeout = 10; // seconds
-lgtv.discover_ip(retry_timeout, function(err, ipaddr) {
-  if (err) {
-    console.log("Failed to find TV IP address on the LAN. Verify that TV is on, and that you are on the same LAN/Wifi.");
-  } else {
-    console.log("TV ip addr is: " + ipaddr);
-  }
+lgtv.on('connect', function () {
+    console.log('connected');
+    
+    lgtv.subscribe('ssap://audio/getVolume', function (err, res) {
+        if (res.changed.indexOf('volume') !== -1) console.log('volume changed', res.volume);
+        if (res.changed.indexOf('muted') !== -1) console.log('mute changed', res.muted);
+    });
+    
 });
 ```
 
-If you want to autodiscover each time, this would work,
+Turn TV off:
+```javascript
 
-```js
-lgtv = require("lgtv");
+var lgtv = require("lgtv2")({
+    url: 'ws://lgwebostv:3000'
+});
 
-var retry_timeout = 10; // seconds
-lgtv.discover_ip(retry_timeout, function(err, ipaddr) {
-  if (err) {
-    console.log("Failed to find TV IP address on the LAN. Verify that TV is on, and that you are on the same LAN/Wifi.");
+lgtv.on('error', function (err) {
+    console.log(err);
+});
 
-  } else {
-    lgtv.connect(ipaddr, function(err, response){
-      if (!err) {
-        lgtv.show_float("Found you!", function(err, response){
-          if (!err) {
-            lgtv.disconnect();
-          }
-        }); // show float
-      }
-    }); // connect
-  }
+lgtv.on('connect', function () {
+    console.log('connected');
+    lgtv.request('ssap://system/turnOff', function (err, res) {
+        lgtv.disconnect();
+    });
+    
 });
 ```
 
-## Introduction
+## API
 
-This module is targeting the LG Smart TVs running WebOS, ie later 2014 or 2015 models.
-Previous models used another OS and other protocols and won't work with this.
+### options
 
-* Controlling the TV means
-  * (finding the TV on your local network)
-  * establishing a connection, ie successful handshake
-  * controlling input source, volume, etc
+* url - websocket url of TV. default: 'ws://lgwebostv:3000'
+* timeout - request timeout in milliseconds, default: 15000
+* reconnect - reconnect interval in milliseconds, default: 5000
+* keyFile - path for key storage. Will be suffixed with hostname/ip of TV. default: Linux: `~/.lgtv2/keyfile-`, macOS: 
+`~/Library/Preferences/lgtv2/keyfile-`
+* saveKey - you can override this with your own function for saving the key
+* clientKey - you have to supply the key here if you're using a custom saveKey method
 
-There is some useful information out there already:
+### methods
 
-* LG TV:
-  * LG remote app on android store
-    - you could sniff traffic on network as it interacts with TV
-    - you could reverse engineer by downloading .apk, run dex2jar etc etc
-  * LG remote app by third-party developers
-      - https://github.com/CODeRUS/harbour-lgremote-webos
-        -seems like it is written with deep knowledge of WebOS internals
-  * look through the open source SDK's and API's published by LG
-      - https://github.com/ConnectSDK/Connect-SDK-Android-Core
+#### request(url [, payload] [, callback])
 
-## Motivation
+Payload and callback params are optional. 
 
-There is an LG remote control app for Android, but it is horribly slow. Also, it is very generic and mirrors the physical remote control. With this module I can chain a set of commands such as change input to HDMI_1 and set volume 10 and make them happen programmatically instead of finding the right buttons in the app. I also combine this with a corresponding module for controlling a Kodi media player.
+#### subscribe(url, callback)
+
+#### disconnect()
+
+Closes the connection to the TV and stops auto-reconnection.
+
+#### getSocket(url, callback)
+
+Get specialized socket connection for mouse and button events
+
+Example:
+```Javascript
+lgtv.getSocket(
+    'ssap://com.webos.service.networkinput/getPointerInputSocket',
+    function(err, sock) {
+        if (!err) {
+            sock.send('click');
+        }
+    }
+);
+```
+
+### events
+
+#### prompt
+
+is called when TV prompts for App authorization
+
+#### connect
+
+is called when a connection is established and authorized
+
+#### connecting
+
+is called when trying to connect to the TV
+
+#### close
+
+
+#### error
+
+is called when Websocket connection errors occur. Subsequent equal errors will only be emitted once (So your log isn't 
+flooded with EHOSTUNREACH errors if your TV is off)
+
+
+
+## Commands
+
+
+#### api/getServiceList
+
+#### audio/setMute
+
+Enable/Disable mute
+
+Example: ```lgtv.request('ssap://audio/setMute', {mute: true});```
+
+#### audio/getStatus
+
+#### audio/getVolume
+
+#### audio/setVolume
+
+Example: ```lgtv.request('ssap://audio/setVolume', {volume: 10});```
+
+#### audio/volumeUp
+
+#### audio/volumeDown
+
+#### com.webos.applicationManager/getForegroundAppInfo
+
+#### com.webos.applicationManager/launch
+
+#### com.webos.applicationManager/listLaunchPoints
+
+#### com.webos.service.appstatus/getAppStatus
+
+#### com.webos.service.ime/sendEnterKey
+
+#### com.webos.service.ime/deleteCharacters
+
+#### com.webos.service.tv.display/set3DOn
+
+#### com.webos.service.tv.display/set3DOff
+
+#### com.webos.service.update/getCurrentSWInformation
+
+#### media.controls/play
+
+Example: ```lgtv.request('ssap://media.controls/play');```
+
+#### media.controls/stop
+
+#### media.controls/pause
+
+Example: ```lgtv.request('ssap://media.controls/pause');```
+
+#### media.controls/rewind
+
+#### media.controls/fastForward
+
+#### media.viewer/close
+
+#### system/turnOff
+
+#### system.notifications/createToast
+
+Show a Popup Window.
+
+Example: ```lgtv.request('ssap://system.notifications/createToast', {message: 'Hello World!'});```
+
+#### system.launcher/close
+
+#### system.launcher/getAppState
+
+#### system.launcher/launch
+
+Start an app.
+
+Example: ```lgtv.request('ssap://system.launcher/launch', {id: 'netflix'});```
+
+#### system.launcher/open
+
+#### tv/channelDown
+
+#### tv/channelUp
+
+#### tv/getChannelList
+
+#### tv/getChannelProgramInfo
+
+#### tv/getCurrentChannel
+
+#### tv/getExternalInputList
+
+#### tv/openChannel
+
+#### tv/switchInput
+
+#### webapp/closeWebApp
+
+
+
+## License
+
+MIT (c) [Sebastian Raff](https://github.com/hobbyquaker)
+
+[mit-badge]: https://img.shields.io/badge/License-MIT-blue.svg?style=flat
+[mit-url]: LICENSE
+
